@@ -1,0 +1,71 @@
+body {
+	margin: 0px;
+	display: flex;
+	flex-direction: column;
+}
+
+#top,
+#bottom {
+	width: 100vw;
+	height: 50vh;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+#top {
+	background-color: aqua;
+}
+
+#bottom {
+	background-color: red;
+}
+
+.player {
+	width: 30%;
+	height: 100%;
+	background-color: green;
+	position: relative;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+}
+
+.cards {
+	width: 30%;
+	height: 50%;
+	background-color: purple;
+	margin: 20px 0px;
+}
+.hand {
+	width: 40%;
+	height: 90%;
+	background-color: yellow;
+}
+.playCard {
+	width: 30%;
+	height: 50%;
+	position: absolute;
+	background-color: purple;
+	margin: 20px 0px;
+}
+
+#top .player {
+	flex-direction: row-reverse;
+}
+#top .cards,
+#top .hand {
+	align-self: flex-start;
+}
+#bottom .cards,
+#bottom .hand {
+	align-self: flex-end;
+}
+#top .playCard {
+	bottom: 10%;
+	left: 12.5%;
+}
+#bottom .playCard {
+	top: 10%;
+	right: 12.5%;
+}
