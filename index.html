@@ -8,18 +8,32 @@
 		<script src="main.js" type="module"></script>
 	</head>
 	<body>
-		<div id="top">
-			<div class="player">
-				<div class="cards"></div>
-				<div class="hand"></div>
-                <div class="playCard"></div>
+		<div id="amountMenu">
+			<div id="playerAmount">
+				<h2>How many players?</h2>
+				<div id="playerControl">
+					<div class="playerButton" id="lessPlayers">
+						<h3>-</h3>
+					</div>
+					<h3 id="playerCount">2</h3>
+					<div class="playerButton" id="morePlayers">
+						<h3>+</h3>
+					</div>
+				</div>
 			</div>
+			<button id="playButton">PLAY</button>
 		</div>
-		<div id="bottom">
-			<div class="player">
-				<div class="cards"></div>
-				<div class="hand"></div>
-                <div class="playCard"></div>
+		<div id="nameMenu">
+			<form id="playerNames">
+				<input type="submit" id="submitNames" />
+			</form>
+		</div>
+		<div id="playingField">
+			<div id="top">
+				
+			</div>
+			<div id="bottom">
+				
 			</div>
 		</div>
 	</body>

@@ -1,6 +1,49 @@
 body {
 	margin: 0px;
+}
+
+/* -- AMOUNT MENU -- */
+#amountMenu {
 	display: flex;
+	width: 100vw;
+	height: 100vh;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+#playerControl {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+}
+
+/* -- NAME MENU -- */
+#nameMenu {
+	display: none;
+	width: 100vw;
+	height: 100vh;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+#playerNames {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.nameInput {
+	margin: 10px 0px;
+}
+#submitNames {
+	margin-top: 5px;
+}
+
+/* -- PLAYING FIELD -- */
+#playingField {
+	display: none;
 	flex-direction: column;
 }
 
@@ -11,14 +54,6 @@ body {
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
-}
-
-#top {
-	background-color: aqua;
-}
-
-#bottom {
-	background-color: red;
 }
 
 .player {
