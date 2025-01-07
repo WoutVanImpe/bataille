@@ -49,11 +49,53 @@ checkScreen();
 function startGame() {
 	createPlayers();
 	distributeCards();
+	playATurn();
+}
+
+function playATurn() {
+	const allPlayCardFields = document.querySelectorAll(".playCard");
+	let pot = [];
+
+	// -- EVERONE PLAYS A CARD --
+	allPlayCardFields.forEach(function (playField) {
+		players.forEach(function (player) {
+			if (player.number == playField.id) {
+				const playedCard = player.cards.pop();
+				const object = {
+					player: player.number,
+					playedCard: playedCard,
+					number: getNumber(playedCard),
+				};
+				pot.push(object);
+				playField.style.backgroundImage = `url(./images/${playedCard}.svg`;
+			}
+		});
+	});
+
+	// -- DETERMINE THE WINNER --
+	pot.sort((a, b) => (a.number > b.number ? 1 : b.number > a.number ? -1 : 0));
+	const winner = pot[0].player;
+	pot.forEach(function (card) {
+		players.forEach(function (player) {
+			if (player.number == winner) {
+				player.cards.push(card.playedCard);
+			}
+		});
+	});
+	console.log(players);
 }
 
 function createPlayers() {
 	for (let i = 0; i < playerAmount; i++) {
-		const element = `<div class="player" id="${players[i].number}"><div class="cards"><p>${players[i].cards.length}</p></div><div class="hand"></div><div class="playCard"></div></div>`;
+		const element = `<div class="player" id="${players[i].number}">
+			<div class="cards">
+				<p>${players[i].cards.length}</p>
+			</div>
+				<div class="hand">
+			</div>
+				<div class="playCard" id="${players[i].number}">
+			</div>
+		</div>`;
 		if (i % 2) {
 			document.getElementById("top").innerHTML += element;
 		} else {
