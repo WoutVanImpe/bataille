@@ -10,6 +10,7 @@ body {
 	background-size: cover;
 }
 
+h1,
 h2,
 h3,
 p,
@@ -106,6 +107,17 @@ p {
 	justify-content: space-around;
 }
 
+.nameTag {
+	position: absolute;
+	z-index: 999;
+}
+#top .nameTag {
+	top: 0px;
+}
+#bottom .nameTag {
+	bottom: 0px;
+}
+
 .cards {
 	width: 30%;
 	height: 50%;
@@ -178,16 +190,10 @@ p {
 	animation-duration: 0.2s;
 	animation-iteration-count: infinite;
 }
-/* #top .playCard.winner {
-	margin: -5px;
-}
-#bottom .playCard.winner {
-	margin: -5px;
-} */
 
 @keyframes winner {
 	0% {
-		background-color: goldenrod;
+		background-color: red;
 	}
 	100% {
 		background-color: none;

@@ -52,88 +52,175 @@ function startGame() {
 	playATurn();
 }
 
-function playATurn() {
+async function playATurn() {
 	addPlayAnimation();
-	sleep(1500).then(() => {
-		const allPlayCardFields = document.querySelectorAll(".playCard");
-		let pot = [];
-		let tie = [];
+	await sleep(1500);
 
-		// -- EVERONE PLAYS A CARD --
-		allPlayCardFields.forEach(function (playField) {
-			players.forEach(function (player) {
-				if (!player.lost) {
-					if (player.number == playField.id) {
-						const playedCard = player.cards.shift();
-						const number = getNumber(playedCard);
-						const object = {
-							player: player.number,
-							playedCard: playedCard,
-							number: number,
-						};
-						console.log(`Player ${player.name} played card ${playedCard} (number: ${number})`);
-						pot.push(object);
-						playField.style.backgroundImage = `url(./images/${playedCard}.svg)`;
-					}
-				}
-			});
-		});
-		updateCardAmount();
-		setTimeout(removeCardAnimation, 400);
+	// -- EVERONE PLAYS A CARD --
+	const pot = collectCards();
+	updateCardAmount();
+	setTimeout(removeCardAnimation, 400);
 
-		// -- DETERMINE THE WINNER --
-		sleep(2000).then(() => {
-			console.log("Before sorting:", pot);
-			pot.sort((a, b) => (a.number < b.number ? 1 : b.number < a.number ? -1 : 0));
-			console.log("After sorting:", pot);
-			const winner = pot[0].player;
+	await sleep(2000);
 
-			// -- CHECK DUPLICATES --
-			if (pot[0].number == pot[1].number) {
-				console.log("dups");
-				pot.forEach(function (play) {
-					if (play.number == pot[0].number) {
-						tie.push(play.player);
-					}
-				});
+	// -- DETERMINE THE WINNER + CHECK DUPLICATES --
+	const winner = determineWinner(pot);
+	if (pot[0].number == pot[1].number) {
+		const winners = [];
+		pot.forEach(function (play) {
+			if (play.number == pot[0].number) {
+				winners.push(play);
 			}
+		});
+		await handleTie(pot, winners);
+		return;
+	}
 
-			// -- PLAY DUP ROUND --
+	await displayWinner(winner);
+	assignCardsToWinner(winner, pot);
 
-			// -- DISPLAY WINNER --
-			allPlayCardFields.forEach(function (playField) {
-				if (winner == playField.id) {
-					playField.classList.add("winner");
-					sleep(2000).then(() => {
-						playField.classList.remove("winner");
-					});
-				}
-			});
+	checkPlayersLost();
 
-			// -- GIVE ALL CARDS TO WINNER + REMOVE CARDS FROM BOARD --
-			sleep(2000).then(() => {
-				removeCardsFromBoard();
-				pot.forEach(function (card) {
-					players.forEach(function (player) {
-						if (player.number == winner) {
-							player.cards.push(card.playedCard);
-						}
-					});
+	if (playerAmount > 1) {
+		await sleep(2000);
+		playATurn();
+	}
+}
+
+function collectCards() {
+	const allPlayCardFields = document.querySelectorAll(".playCard");
+	let pot = [];
+
+	allPlayCardFields.forEach((playField) => {
+		players.forEach((player) => {
+			if (!player.lost && player.number === playField.id) {
+				const playedCard = player.cards.shift();
+				const number = getNumber(playedCard);
+				pot.push({
+					player: player.number,
+					playedCard,
+					number,
 				});
-				updateCardAmount();
-
-				// -- CHECK IF ANYONE HAS 0 CARDS --
-				checkPlayersLost();
-
-				// -- REPEAT --
-				if (playerAmount > 1) {
-					sleep(2000).then(() => {
-						playATurn();
-					});
-				}
-			});
+				playField.style.backgroundImage = `url(./images/${playedCard}.svg)`;
+			}
 		});
 	});
+
+	return pot;
+}
+
+function determineWinner(pot) {
+	pot.sort((a, b) => b.number - a.number);
+
+	if (pot[0].number === pot[1]?.number) {
+		console.log("Tie detected!");
+		return null;
+	}
+
+	return pot[0].player;
+}
+
+async function handleTie(pot, winners) {
+	// -- PLAY HIDDEN CARD --
+	addPlayAnimation();
+	await sleep(1500); // Wacht op hand-animatie
+
+	for (const winner of winners) {
+		const playField = document.querySelector(`.playCard#${winner.player}`);
+		const player = players.find((p) => p.number === winner.player);
+
+		if (player && player.cards.length > 0) {
+			const playedCard = player.cards.shift();
+			const number = getNumber(playedCard);
+
+			pot.push({
+				player: winner.player,
+				playedCard,
+				number,
+			});
+
+			// Toon gedekte kaart
+			playField.style.backgroundImage = `url(./images/0.svg)`;
+		}
+	}
+
+	setTimeout(removeCardAnimation, 400);
+	await sleep(2000); // Wacht na animatie
+
+	// -- PLAY NEW CARD --
+	const subPot = [];
+	addPlayAnimation();
+	await sleep(1500); // Wacht op hand-animatie
+
+	for (const winner of winners) {
+		const playField = document.querySelector(`.playCard#${winner.player}`);
+		const player = players.find((p) => p.number === winner.player);
+
+		if (player && player.cards.length > 0) {
+			const playedCard = player.cards.shift();
+			const number = getNumber(playedCard);
+
+			subPot.push({
+				player: winner.player,
+				playedCard,
+				number,
+			});
+
+			// Toon open kaart
+			playField.style.backgroundImage = `url(./images/${playedCard}.svg)`;
+		}
+	}
+
+	setTimeout(removeCardAnimation, 400);
+	await sleep(2000); // Wacht na animatie
+
+	// -- CHECK WINNER + DUPLICATES --
+	const winner = determineWinner(subPot);
+	if (subPot[0].number === subPot[1]?.number) {
+		const newWinners = subPot.filter((card) => card.number === subPot[0].number);
+		pot.push(...subPot);
+		await handleTie(pot, newWinners); // Herhaal tie-breaker
+		return;
+	}
+
+	await displayWinner(winner);
+
+	pot.push(...subPot);
+	assignCardsToWinner(winner, pot);
+
+	checkPlayersLost();
+
+	if (playerAmount > 1) {
+		await sleep(2000);
+		playATurn();
+	}
+}
+
+async function displayWinner(winner) {
+	const allPlayCardFields = document.querySelectorAll(".playCard");
+	allPlayCardFields.forEach((playField) => {
+		if (winner === playField.id) {
+			playField.classList.add("winner");
+		}
+	});
+
+	await sleep(2000);
+
+	allPlayCardFields.forEach((playField) => {
+		playField.classList.remove("winner");
+	});
+}
+
+function assignCardsToWinner(winner, pot) {
+	const winnerPlayer = players.find((player) => player.number === winner);
+	if (winnerPlayer) {
+		pot.forEach((card) => {
+			winnerPlayer.cards.push(card.playedCard);
+		});
+	}
+
+	updateCardAmount();
+	removeCardsFromBoard();
 }
 
 function createPlayers() {
@@ -146,6 +233,7 @@ function createPlayers() {
 			</div>
 				<div class="playCard" id="${players[i].number}">
 			</div>
+			<h1 class="nameTag">${players[i].name}</h1>
 		</div>`;
 		if (i % 2) {
 			document.getElementById("top").innerHTML += element;
@@ -174,7 +262,10 @@ function checkScreen() {
 function createNameForms(playerAmount) {
 	for (let i = 0; i < playerAmount; i++) {
 		const playerNumber = i + 1;
-		const element = `<div class="nameInput"><label for="player${playerNumber}">Player ${playerNumber}: </label><input id="player${playerNumber}" name="player${playerNumber}" type="text" placeholder="name" required /></div>`;
+		const element = `<div class="nameInput">
+			<label for="player${playerNumber}">Player ${playerNumber}: </label>
+			<input id="player${playerNumber}" name="player${playerNumber}" type="text" placeholder="name" required />
+		</div>`;
 		document.getElementById("submitNames").insertAdjacentHTML("beforebegin", element);
 	}
 }
