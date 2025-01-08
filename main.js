@@ -57,21 +57,24 @@ function playATurn() {
 	sleep(1500).then(() => {
 		const allPlayCardFields = document.querySelectorAll(".playCard");
 		let pot = [];
+		let tie = [];
 
 		// -- EVERONE PLAYS A CARD --
 		allPlayCardFields.forEach(function (playField) {
 			players.forEach(function (player) {
-				if (player.number == playField.id) {
-					const playedCard = player.cards.shift();
-					const number = getNumber(playedCard);
-					const object = {
-						player: player.number,
-						playedCard: playedCard,
-						number: number,
-					};
-					console.log(`Player ${player.name} played card ${playedCard} (number: ${number})`);
-					pot.push(object);
-					playField.style.backgroundImage = `url(./images/${playedCard}.svg)`;
+				if (!player.lost) {
+					if (player.number == playField.id) {
+						const playedCard = player.cards.shift();
+						const number = getNumber(playedCard);
+						const object = {
+							player: player.number,
+							playedCard: playedCard,
+							number: number,
+						};
+						console.log(`Player ${player.name} played card ${playedCard} (number: ${number})`);
+						pot.push(object);
+						playField.style.backgroundImage = `url(./images/${playedCard}.svg)`;
+					}
 				}
 			});
 		});
@@ -84,10 +87,19 @@ function playATurn() {
 			pot.sort((a, b) => (a.number < b.number ? 1 : b.number < a.number ? -1 : 0));
 			console.log("After sorting:", pot);
 			const winner = pot[0].player;
+
 			// -- CHECK DUPLICATES --
 			if (pot[0].number == pot[1].number) {
 				console.log("dups");
+				pot.forEach(function (play) {
+					if (play.number == pot[0].number) {
+						tie.push(play.player);
+					}
+				});
 			}
+
+			// -- PLAY DUP ROUND --
+
 			// -- DISPLAY WINNER --
 			allPlayCardFields.forEach(function (playField) {
 				if (winner == playField.id) {
