@@ -35,7 +35,7 @@ document.getElementById("playerNames").addEventListener("submit", function (e) {
 			number: `player${playerNumber}`,
 			name: document.getElementById(`player${playerNumber}`).value,
 			cards: [],
-			victories: 0,
+			lost: false,
 		};
 		players.push(player);
 	}
@@ -71,18 +71,35 @@ function playATurn() {
 			}
 		});
 	});
+	updateCardAmount();
 
 	// -- DETERMINE THE WINNER --
-	pot.sort((a, b) => (a.number > b.number ? 1 : b.number > a.number ? -1 : 0));
-	const winner = pot[0].player;
-	pot.forEach(function (card) {
-		players.forEach(function (player) {
-			if (player.number == winner) {
-				player.cards.push(card.playedCard);
+	sleep(2000).then(() => {
+		pot.sort((a, b) => (a.number > b.number ? 1 : b.number > a.number ? -1 : 0));
+		const winner = pot[0].player;
+
+		// -- GIVE ALL CARDS TO WINNER --
+		sleep(2000).then(() => {
+			pot.forEach(function (card) {
+				players.forEach(function (player) {
+					if (player.number == winner) {
+						player.cards.push(card.playedCard);
+					}
+				});
+			});
+			updateCardAmount();
+
+			// -- CHECK IF ANYONE HAS 0 CARDS --
+			checkPlayersLost();
+
+			// -- REPEAT --
+			if (playerAmount > 1) {
+				sleep(2000).then(() => {
+					playATurn();
+				});
 			}
 		});
 	});
-	console.log(players);
 }
 
 function createPlayers() {
@@ -152,7 +169,8 @@ function distributeCards() {
 			amountOfPlayers = players.length - 1;
 		}
 	}
-	console.log(players);
+
+	updateCardAmount();
 }
 
 function getNumber(string) {
@@ -167,5 +185,29 @@ function createCardDeck() {
 			const card = symbol + i;
 			cardDeck.push(card);
 		}
+	});
+}
+
+function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function checkPlayersLost() {
+	players.forEach(function (player) {
+		if (player.cards.length == 0) {
+			player.lost = true;
+			--playerAmount;
+		}
+	});
+}
+
+function updateCardAmount() {
+	const playerFields = document.querySelectorAll(".player");
+	playerFields.forEach(function (playerField) {
+		players.forEach(function (player) {
+			if (playerField.id == player.number) {
+				playerField.firstElementChild.innerHTML = `<p>${player.cards.length}</p>`;
+			}
+		});
 	});
 }
