@@ -53,51 +53,73 @@ function startGame() {
 }
 
 function playATurn() {
-	const allPlayCardFields = document.querySelectorAll(".playCard");
-	let pot = [];
+	addPlayAnimation();
+	sleep(1500).then(() => {
+		const allPlayCardFields = document.querySelectorAll(".playCard");
+		let pot = [];
 
-	// -- EVERONE PLAYS A CARD --
-	allPlayCardFields.forEach(function (playField) {
-		players.forEach(function (player) {
-			if (player.number == playField.id) {
-				const playedCard = player.cards.pop();
-				const object = {
-					player: player.number,
-					playedCard: playedCard,
-					number: getNumber(playedCard),
-				};
-				pot.push(object);
-				playField.style.backgroundImage = `url(./images/${playedCard}.svg`;
-			}
-		});
-	});
-	updateCardAmount();
-
-	// -- DETERMINE THE WINNER --
-	sleep(2000).then(() => {
-		pot.sort((a, b) => (a.number > b.number ? 1 : b.number > a.number ? -1 : 0));
-		const winner = pot[0].player;
-
-		// -- GIVE ALL CARDS TO WINNER --
-		sleep(2000).then(() => {
-			pot.forEach(function (card) {
-				players.forEach(function (player) {
-					if (player.number == winner) {
-						player.cards.push(card.playedCard);
-					}
-				});
+		// -- EVERONE PLAYS A CARD --
+		allPlayCardFields.forEach(function (playField) {
+			players.forEach(function (player) {
+				if (player.number == playField.id) {
+					const playedCard = player.cards.shift();
+					const number = getNumber(playedCard);
+					const object = {
+						player: player.number,
+						playedCard: playedCard,
+						number: number,
+					};
+					console.log(`Player ${player.name} played card ${playedCard} (number: ${number})`);
+					pot.push(object);
+					playField.style.backgroundImage = `url(./images/${playedCard}.svg)`;
+				}
 			});
-			updateCardAmount();
+		});
+		updateCardAmount();
+		setTimeout(removeCardAnimation, 400);
 
-			// -- CHECK IF ANYONE HAS 0 CARDS --
-			checkPlayersLost();
-
-			// -- REPEAT --
-			if (playerAmount > 1) {
-				sleep(2000).then(() => {
-					playATurn();
-				});
+		// -- DETERMINE THE WINNER --
+		sleep(2000).then(() => {
+			console.log("Before sorting:", pot);
+			pot.sort((a, b) => (a.number < b.number ? 1 : b.number < a.number ? -1 : 0));
+			console.log("After sorting:", pot);
+			const winner = pot[0].player;
+			// -- CHECK DUPLICATES --
+			if (pot[0].number == pot[1].number) {
+				console.log("dups");
 			}
+			// -- DISPLAY WINNER --
+			allPlayCardFields.forEach(function (playField) {
+				if (winner == playField.id) {
+					playField.classList.add("winner");
+					sleep(2000).then(() => {
+						playField.classList.remove("winner");
+					});
+				}
+			});
+
+			// -- GIVE ALL CARDS TO WINNER + REMOVE CARDS FROM BOARD --
+			sleep(2000).then(() => {
+				removeCardsFromBoard();
+				pot.forEach(function (card) {
+					players.forEach(function (player) {
+						if (player.number == winner) {
+							player.cards.push(card.playedCard);
+						}
+					});
+				});
+				updateCardAmount();
+
+				// -- CHECK IF ANYONE HAS 0 CARDS --
+				checkPlayersLost();
+
+				// -- REPEAT --
+				if (playerAmount > 1) {
+					sleep(2000).then(() => {
+						playATurn();
+					});
+				}
+			});
 		});
 	});
 }
@@ -108,7 +130,7 @@ function createPlayers() {
 			<div class="cards">
 				<p>${players[i].cards.length}</p>
 			</div>
-				<div class="hand">
+				<div class="hand" id="${players[i].number}">
 			</div>
 				<div class="playCard" id="${players[i].number}">
 			</div>
@@ -175,7 +197,7 @@ function distributeCards() {
 
 function getNumber(string) {
 	const [number] = string.match(/(\d+)/);
-	return number;
+	return Number(number);
 }
 
 function createCardDeck() {
@@ -209,5 +231,30 @@ function updateCardAmount() {
 				playerField.firstElementChild.innerHTML = `<p>${player.cards.length}</p>`;
 			}
 		});
+	});
+}
+
+function removeCardsFromBoard() {
+	const allPlayCardFields = document.querySelectorAll(".playCard");
+	allPlayCardFields.forEach(function (playField) {
+		playField.style.backgroundImage = "none";
+	});
+}
+
+function addPlayAnimation() {
+	const allHands = document.querySelectorAll(".hand");
+	allHands.forEach(function (hand) {
+		players.forEach(function (player) {
+			if (hand.id == player.number) {
+				hand.classList.add("playHand");
+			}
+		});
+	});
+}
+
+function removeCardAnimation() {
+	const allHands = document.querySelectorAll(".hand");
+	allHands.forEach(function (hand) {
+		hand.classList.remove("playHand");
 	});
 }

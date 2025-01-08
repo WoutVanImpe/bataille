@@ -1,22 +1,53 @@
 @import url("https://use.typekit.net/faf0wfp.css");
 
 body {
+	overflow: hidden;
 	margin: 0px;
+	width: 100vw;
+	height: 100vh;
+	background-image: url("./images/background.jpeg");
+	background-position: center center;
+	background-size: cover;
 }
 
 h2,
-H3,
-p {
+h3,
+p,
+label,
+:placeholder-shown,
+button,
+input {
 	font-family: "lores-12", sans-serif;
 	font-weight: 700;
 	font-style: normal;
+	color: white;
+}
+button,
+h3,
+input {
+	cursor: pointer;
+}
+
+button,
+input[type="submit"] {
+	margin-top: 50px;
+	background: none;
+	border: none;
+	font-size: 60px;
+}
+button:hover,
+input[type="submit"]:hover {
+	text-decoration: underline;
+}
+p {
+	color: black;
 }
 
 /* -- AMOUNT MENU -- */
 #amountMenu {
 	display: flex;
-	width: 100vw;
-	height: 100vh;
+	width: 100%;
+	height: 100%;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
@@ -32,8 +63,8 @@ p {
 /* -- NAME MENU -- */
 #nameMenu {
 	display: none;
-	width: 100vw;
-	height: 100vh;
+	width: 100%;
+	height: 100%;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
@@ -59,8 +90,8 @@ p {
 
 #top,
 #bottom {
-	width: 100vw;
-	height: 50vh;
+	width: 100%;
+	height: 50%;
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
@@ -69,7 +100,6 @@ p {
 .player {
 	width: 30%;
 	height: 100%;
-	background-color: green;
 	position: relative;
 	display: flex;
 	flex-direction: row;
@@ -95,9 +125,24 @@ p {
 
 .hand {
 	width: 40%;
-	height: 90%;
-	background-color: yellow;
+	height: 400px;
+	background-size: cover;
+	z-index: 99;
 }
+.hand.playHand {
+	background-image: url("./images/handBottom.svg");
+	animation-name: playBottom;
+	animation-duration: 2s;
+	animation-iteration-count: 1;
+}
+#top .hand.hand.playHand {
+	transform: scaleY(-1);
+	background-image: url("./images/handTop.svg");
+	animation-name: playTop;
+	animation-duration: 2s;
+	animation-iteration-count: 1;
+}
+
 .playCard {
 	width: 30%;
 	height: 50%;
@@ -126,4 +171,48 @@ p {
 #bottom .playCard {
 	top: 10%;
 	right: 12.5%;
+}
+
+.winner {
+	animation-name: winner;
+	animation-duration: 0.2s;
+	animation-iteration-count: infinite;
+}
+/* #top .playCard.winner {
+	margin: -5px;
+}
+#bottom .playCard.winner {
+	margin: -5px;
+} */
+
+@keyframes winner {
+	0% {
+		background-color: goldenrod;
+	}
+	100% {
+		background-color: none;
+	}
+}
+
+@keyframes playBottom {
+	0% {
+		transform: translateY(100vh);
+	}
+	80% {
+		transform: translateY(0);
+	}
+	100% {
+		transform: translateY(100vh);
+	}
+}
+@keyframes playTop {
+	0% {
+		transform: translateY(-100vh);
+	}
+	80% {
+		transform: translateY(0);
+	}
+	100% {
+		transform: translateY(-100vh);
+	}
 }
