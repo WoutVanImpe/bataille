@@ -40,7 +40,8 @@ button:hover,
 input[type="submit"]:hover {
 	text-decoration: underline;
 }
-p {
+p,
+input[type="text"] {
 	color: black;
 }
 
@@ -81,6 +82,49 @@ p {
 }
 #submitNames {
 	margin-top: 5px;
+}
+
+/* -- SCOREBOARD -- */
+#scoreboard {
+	display: none;
+	width: 100%;
+	height: 100%;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: center;
+	align-items: flex-end;
+	text-align: center;
+}
+#scoreboard > * {
+	width: 16%;
+	display: flex;
+	justify-content: center;
+}
+.rank1 {
+	height: 70%;
+	background-color: goldenrod;
+	position: relative;
+}
+.rank2 {
+	height: 55%;
+	background-color: silver;
+	position: relative;
+}
+.rank3 {
+	height: 40%;
+	background-color: brown;
+	position: relative;
+}
+.rank4,
+.rank5,
+.rank6 {
+	height: 25%;
+	background-color: black;
+	position: relative;
+}
+#scoreboard h1 {
+	position: absolute;
+	top: 0px;
 }
 
 /* -- PLAYING FIELD -- */

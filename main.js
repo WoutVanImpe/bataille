@@ -4,6 +4,8 @@ let stage = "amount";
 let playerAmount = 2;
 let players = [];
 let cardDeck = [];
+let ranking = [];
+let speed = 0.5;
 createCardDeck();
 
 // -- AMOUNT MENU --
@@ -53,15 +55,15 @@ function startGame() {
 }
 
 async function playATurn() {
-	addPlayAnimation();
-	await sleep(1500);
+	addPlayAnimation("all");
+	await sleep(1500 * speed);
 
 	// -- EVERONE PLAYS A CARD --
 	const pot = collectCards();
 	updateCardAmount();
-	setTimeout(removeCardAnimation, 400);
+	setTimeout(removeCardAnimation, 400 * speed);
 
-	await sleep(2000);
+	await sleep(2000 * speed);
 
 	// -- DETERMINE THE WINNER + CHECK DUPLICATES --
 	const winner = determineWinner(pot);
@@ -81,8 +83,8 @@ async function playATurn() {
 
 	checkPlayersLost();
 
-	if (playerAmount > 1) {
-		await sleep(2000);
+	if (ranking.length + 1 != players.length) {
+		await sleep(2000 * speed);
 		playATurn();
 	}
 }
@@ -121,9 +123,19 @@ function determineWinner(pot) {
 }
 
 async function handleTie(pot, winners) {
+	// -- REMOVE NOT TIEING CARDS --
+	players.forEach(function (player) {
+		// Controleer of de speler GEEN winnaar is
+		const isWinner = winners.some((winner) => winner.player === player.number);
+		if (!isWinner) {
+			// Verwijder de kaart van de niet-winnaar
+			document.querySelector(`.playCard#${player.number}`).style.backgroundImage = "none";
+		}
+	});
+
 	// -- PLAY HIDDEN CARD --
-	addPlayAnimation();
-	await sleep(1500); // Wacht op hand-animatie
+	addPlayAnimation(winners);
+	await sleep(1500 * speed); // Wacht op hand-animatie
 
 	for (const winner of winners) {
 		const playField = document.querySelector(`.playCard#${winner.player}`);
@@ -143,14 +155,14 @@ async function handleTie(pot, winners) {
 			playField.style.backgroundImage = `url(./images/0.svg)`;
 		}
 	}
-
-	setTimeout(removeCardAnimation, 400);
-	await sleep(2000); // Wacht na animatie
+	updateCardAmount();
+	setTimeout(removeCardAnimation, 400 * speed);
+	await sleep(2000 * speed); // Wacht na animatie
 
 	// -- PLAY NEW CARD --
 	const subPot = [];
-	addPlayAnimation();
-	await sleep(1500); // Wacht op hand-animatie
+	addPlayAnimation(winners);
+	await sleep(1500 * speed); // Wacht op hand-animatie
 
 	for (const winner of winners) {
 		const playField = document.querySelector(`.playCard#${winner.player}`);
@@ -170,9 +182,9 @@ async function handleTie(pot, winners) {
 			playField.style.backgroundImage = `url(./images/${playedCard}.svg)`;
 		}
 	}
-
-	setTimeout(removeCardAnimation, 400);
-	await sleep(2000); // Wacht na animatie
+	updateCardAmount();
+	setTimeout(removeCardAnimation, 400 * speed);
+	await sleep(2000 * speed); // Wacht na animatie
 
 	// -- CHECK WINNER + DUPLICATES --
 	const winner = determineWinner(subPot);
@@ -190,8 +202,8 @@ async function handleTie(pot, winners) {
 
 	checkPlayersLost();
 
-	if (playerAmount > 1) {
-		await sleep(2000);
+	if (ranking.length + 1 != players.length) {
+		await sleep(2000 * speed);
 		playATurn();
 	}
 }
@@ -204,7 +216,7 @@ async function displayWinner(winner) {
 		}
 	});
 
-	await sleep(2000);
+	await sleep(2000 * speed);
 
 	allPlayCardFields.forEach((playField) => {
 		playField.classList.remove("winner");
@@ -226,7 +238,7 @@ function assignCardsToWinner(winner, pot) {
 function createPlayers() {
 	for (let i = 0; i < playerAmount; i++) {
 		const element = `<div class="player" id="${players[i].number}">
-			<div class="cards">
+			<div class="cards" id="${players[i].number}">
 				<p>${players[i].cards.length}</p>
 			</div>
 				<div class="hand" id="${players[i].number}">
@@ -248,12 +260,20 @@ function checkScreen() {
 		document.getElementById("amountMenu").style.display = "flex";
 		document.getElementById("nameMenu").style.display = "none";
 		document.getElementById("playingField").style.display = "none";
+		document.getElementById("scoreboard").style.display = "none";
 	} else if (stage == "name") {
 		document.getElementById("nameMenu").style.display = "flex";
 		document.getElementById("amountMenu").style.display = "none";
 		document.getElementById("playingField").style.display = "none";
+		document.getElementById("scoreboard").style.display = "none";
 	} else if (stage == "play") {
 		document.getElementById("playingField").style.display = "flex";
+		document.getElementById("amountMenu").style.display = "none";
+		document.getElementById("nameMenu").style.display = "none";
+		document.getElementById("scoreboard").style.display = "none";
+	} else if (stage == "scoreboard") {
+		document.getElementById("scoreboard").style.display = "flex";
+		document.getElementById("playingField").style.display = "none";
 		document.getElementById("amountMenu").style.display = "none";
 		document.getElementById("nameMenu").style.display = "none";
 	}
@@ -319,9 +339,10 @@ function sleep(ms) {
 
 function checkPlayersLost() {
 	players.forEach(function (player) {
-		if (player.cards.length == 0) {
+		if (player.cards.length == 0 && !ranking.includes(player.name)) {
 			player.lost = true;
-			--playerAmount;
+			ranking.unshift(player.name);
+			checkEndGame();
 		}
 	});
 }
@@ -335,6 +356,22 @@ function updateCardAmount() {
 			}
 		});
 	});
+	check0Cards();
+}
+
+function check0Cards() {
+	const cardFields = document.querySelectorAll(".cards");
+	cardFields.forEach(function (cardField) {
+		players.forEach(function (player) {
+			if (cardField.id == player.number) {
+				if (player.cards.length == 0) {
+					cardField.style.backgroundImage = "none";
+				} else {
+					cardField.style.backgroundImage = "url(./images/0.svg)";
+				}
+			}
+		});
+	});
 }
 
 function removeCardsFromBoard() {
@@ -344,12 +381,24 @@ function removeCardsFromBoard() {
 	});
 }
 
-function addPlayAnimation() {
+function addPlayAnimation(selector) {
 	const allHands = document.querySelectorAll(".hand");
 	allHands.forEach(function (hand) {
 		players.forEach(function (player) {
-			if (hand.id == player.number) {
-				hand.classList.add("playHand");
+			if (selector == "all") {
+				if (hand.id == player.number) {
+					if (player.cards.length > 0) {
+						hand.classList.add("playHand");
+					}
+				}
+			} else {
+				selector.forEach(function (winner) {
+					if (hand.id == winner.player) {
+						if (player.cards.length > 0) {
+							hand.classList.add("playHand");
+						}
+					}
+				});
 			}
 		});
 	});
@@ -359,5 +408,29 @@ function removeCardAnimation() {
 	const allHands = document.querySelectorAll(".hand");
 	allHands.forEach(function (hand) {
 		hand.classList.remove("playHand");
+	});
+}
+
+function checkEndGame() {
+	console.log("players:" + players.length, players, "ranking:" + ranking.length, ranking);
+	if (players.length == ranking.length + 1) {
+		players.forEach(function (player) {
+			if (player.cards.length > 0) {
+				console.log("endgame!");
+				ranking.unshift(player.name);
+			}
+		});
+		endGame();
+	}
+}
+
+function endGame() {
+	stage = "scoreboard";
+	let placement = 1;
+	checkScreen();
+	ranking.forEach(function (rank) {
+		const element = `<div class="rank${placement}"><h1>${rank}</h1></div>`;
+		document.getElementById("scoreboard").innerHTML += element;
+		++placement;
 	});
 }
