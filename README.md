@@ -19,3 +19,10 @@ Dit project werd gemaakt als oefening en voor de fun.
 2. Open het project in VS Code (of een andere editor).
 3. Start een lokale server (bijvoorbeeld via Live Server in VS Code).
 4. Open de index.html in je browser.
+
+---
+
+## 🧑‍💻 Ontwikkelaar
+
+Wout Van Impe  
+[GitHub-profiel](https://github.com/woutvanimpe)
